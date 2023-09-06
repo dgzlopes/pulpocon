@@ -2,7 +2,7 @@
 
 Useful links: Slides, [k6 docs](https://k6.io/docs/)
 
-## 0. Before we start
+##  0. Before we start
 
 ### 0.1. Introduction
 
@@ -12,9 +12,10 @@ Useful links: Slides, [k6 docs](https://k6.io/docs/)
 - GitHub/GitLab account
 - Optional (but recommended): [k6](https://k6.io/docs/get-started/installation/)
   - You can run it inside Docker, but the experience is better if you install it locally for learning. 
-    - You get nice colors and dynamic progress bars!
+    - You get nice colors and dynamic progress bars!  
 
-### 0.3.  Run the local playground
+###  0.3.  Run the local playground
+
 First of all, clone the repository: 
 ```bash
 git clone https://github.com/dgzlopes/pulpocon
@@ -335,7 +336,7 @@ In case you have time (now or later), here are some more things that you can try
 
 ### 2.3. Libraries and Extensions
 
-## 3. k6 + CI
+## 3. CI
 
 ## 4. More things?
 
