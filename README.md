@@ -323,9 +323,9 @@ You should see a dashboard with some metrics, that are being updated in real tim
 
 In case you have time (now or later), here are some more things that you can try out.
 
-#### 1.6.1. CLI overrides 
+#### 1.6.1. Lifecycle
 #### 1.6.2. Environment variables
-#### 1.6.3. Setup and teardown
+#### 1.6.3. CLI overrides 
 #### 1.6.4. Custom metrics
 
 ## 2. Advanced
@@ -334,17 +334,31 @@ In case you have time (now or later), here are some more things that you can try
 
 ### 2.2. Scenarios
 
-### 2.3. Libraries and Extensions
+### 2.3. Libraries 
+
+### 2.4. Extra: More stuff!
+
+#### 2.4.1. Composability
+
+#### 2.4.2. Extensions
 
 ## 3. CI
 
+### GitHub
+
+### GitLab
+
 ## 4. More things?
 
-Yup, there are more things! But, we don't have time to cover them all.
+Yup, there are more things! But we only had time to cover some of them.
 
-A big part we have missed is Grafana Cloud k6. It is our Cloud offering. 
+A big part we have missed is Grafana Cloud k6. It is our Cloud offering. It is the natural continuation of k6 OSS. 
 
-Also, we didn't chat about Disruptor, Operator, etc.
+You can run your test locally, as we did until now, and stream the results to our Cloud to easily persist, analyze, and compare them. Alternatively, you can run them all over the world by switching from `k6 run` to `k6 cloud` in the CLI - as easy as that. All that, plus lots of more useful features and a very deep integration with Grafana, so you can correlate all your internal data with your test's data!
+
+We have an actually useful free tier, so, yeah, if that sounds interesting, [give it a look](https://grafana.com/products/cloud/k6/)!
+
+Also, we didn't cover the [Disruptor](https://k6.io/docs/javascript-api/xk6-disruptor/) (our take in fault injection), the [Operator](https://github.com/grafana/k6-operator) (run distributed tests in your Kubernetes clusters), etc. Our docs page is the best place to learn about all the things we missed and more: https://k6.io/docs/
 
 
 
