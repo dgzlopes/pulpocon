@@ -16,11 +16,11 @@ Useful links: Slides, [k6 docs](https://k6.io/docs/)
   * [1.5. Thresholds](#15-thresholds)
   * [1.6. Import data from a file](#16-import-data-from-a-file)
   * [1.7. Visualize the results over time with Prometheus and Grafana](#17-visualize-the-results-over-time-with-prometheus-and-grafana)
-  * [1.6. More stuff](#16-more-stuff)
-    + [1.6.1. Lifecycle](#161-lifecycle)
-    + [1.6.2. Environment variables](#162-environment-variables)
-    + [1.6.3. CLI overrides](#163-cli-overrides)
-    + [1.6.4. Custom metrics](#164-custom-metrics)
+  * [1.8. More stuff](#18-more-stuff)
+    + [1.8.1. Lifecycle](#181-lifecycle)
+    + [1.8.2. Environment variables](#182-environment-variables)
+    + [1.8.3. CLI overrides](#183-cli-overrides)
+    + [1.8.4. Custom metrics](#184-custom-metrics)
 - [2. Advanced](#2-advanced)
   * [2.1. Scenarios](#21-scenarios)
   * [2.2. Libraries](#22-libraries)
@@ -29,8 +29,8 @@ Useful links: Slides, [k6 docs](https://k6.io/docs/)
     + [2.3.2. Composability](#232-composability)
     + [2.3.3. Extensions](#233-extensions)
 - [3. CI](#3-ci)
-  * [GitHub](#github)
-  * [GitLab](#gitlab)
+  * [a. GitHub](#a-github)
+  * [b. GitLab](#b-gitlab)
 - [4. More things](#4-more-things)
 
 <small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
@@ -355,20 +355,20 @@ You should see a dashboard with some metrics, that are being updated in real tim
 
 > TIP: Because of how Prometheus metrics work, metrics will be active for five minutes after the last flushed sample. This can be confusing b/c metrics will keep going with the last value even if the test has already finished. To avoid this, you can use the following environment variable: `K6_PROMETHEUS_RW_STALE_MARKERS=true`.
 
-### 1.6. More stuff
+### 1.8. More stuff
 
 In case you have time (now or later), here are some more things that you can try out.
 
-#### 1.6.1. Lifecycle
+#### 1.8.1. Lifecycle
 TBD
 
-#### 1.6.2. Environment variables
+#### 1.8.2. Environment variables
 TBD
 
-#### 1.6.3. CLI overrides 
+#### 1.8.3. CLI overrides 
 TBD
 
-#### 1.6.4. Custom metrics
+#### 1.8.4. Custom metrics
 TBD
 
 ## 2. Advanced
@@ -544,9 +544,9 @@ https://k6.io/docs/extensions/guides/build-a-k6-binary-using-docker/
 
 ## 3. CI
 
-### GitHub
+### a. GitHub
 
-### GitLab
+### b. GitLab
 
 ## 4. More things
 
