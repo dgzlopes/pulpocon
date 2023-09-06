@@ -288,7 +288,7 @@ Finally, we can use it in our script. Let's replace the HTTP request with:
 
 That way, we will pick a random customer from the list of customers.  Then, rerun the script. 
 
-If you check the logs of the QuickPizza service, you should see that the customer is changing all the time. 
+If you check the logs of the QuickPizza service, you should see that the customer id that we attach to every log line is changing all the time. 
 
 You verify this by running `docker-compose logs quickpizza`.
 
@@ -311,9 +311,11 @@ docker run -i --network=pulpocon_default grafana/k6 run --out=experimental-prome
 
 Then, run the script again. After that, open http://localhost:3000. 
 
-Then, go to dashboards and click on the k6 dashboard. 
+Then, go to dashboards and click on the k6 dashboard ([this URL should get you there](http://localhost:3000/d/e53a57f8-56e2-4b0c-88f4-9537296a3f48/k6-dashboard?orgId=1&refresh=10s)). 
 
 You should see a dashboard with some metrics, that are being updated in real time.
+
+![dashboard](./media/dashboard.png)
 
 > NOTE: Why is this feature experimental? Only because it has been added pretty recently to k6. But it is already very stable and used by lots of people.
 
@@ -324,23 +326,187 @@ You should see a dashboard with some metrics, that are being updated in real tim
 In case you have time (now or later), here are some more things that you can try out.
 
 #### 1.6.1. Lifecycle
+TBD
+
 #### 1.6.2. Environment variables
+TBD
+
 #### 1.6.3. CLI overrides 
+TBD
+
 #### 1.6.4. Custom metrics
+TBD
 
 ## 2. Advanced
 
-### 2.1. More than HTTP
+### 2.1. Scenarios
+TBD
 
-### 2.2. Scenarios
+### 2.2. Libraries
+TBD
 
-### 2.3. Libraries 
+### 2.3. Extra: More stuff!
 
-### 2.4. Extra: More stuff!
+#### 2.4.1 Browser
 
-#### 2.4.1. Composability
+Even though we have been using HTTP requests so far, k6 is not limited to that. You can use it to test all kinds of things! It natively supports other protocols like gRPC, WebSockets, and Redis - and you can extend it to support more (we chat a bit about extensions later on!).
 
-#### 2.4.2. Extensions
+You can also use it to interact and test your web apps, as with Playwright/Puppeteer. This will be the focus of this section. We will use the Browser testing APIs of k6 to get a pizza recommendation, take a screenshot of the result, and verify the page's performance (by checking its web vitals metrics).
+
+To do that, let's create a new script named `browser.js` with the following content:
+```javascript
+import { browser } from "k6/experimental/browser";
+import { check } from "k6";
+
+const BASE_URL = __ENV.BASE_URL || "http://localhost:3333";
+
+export const options = {
+  scenarios: {
+    ui: {
+      executor: "shared-iterations",
+      options: {
+        browser: {
+          type: "chromium",
+        },
+      },
+    },
+  },
+};
+
+export default async function () {
+  const page = browser.newPage();
+
+  try {
+    await page.goto(BASE_URL);
+    check(page, {
+      header:
+        page.locator("h1").textContent() ==
+        "Looking to break out of your pizza routine?",
+    });
+
+    await page.locator('//button[. = "Pizza, Please!"]').click();
+    page.waitForTimeout(500);
+    page.screenshot({ path: "screenshot.png" });
+    check(page, {
+      recommendation: page.locator("div#recommendations").textContent() != "",
+    });
+  } finally {
+    page.close();
+  }
+}
+```
+
+There are things in the script that we have already talked about, like Checks and Scenarios. But there are also new things, like the `browser` import and the `page` object. These APIs that k6 provides will drive a real browser under the hood. In this script, we go to the QuickPizza page, click the big button, take a screenshot of the result, and verify that the recommendation is not empty. 
+
+To run this script, you must have a Chromium browser installed if you run k6 locally. You can also run this test with a particular Docker image if you don't have it. Just run:
+```bash
+# If you have k6 installed
+k6 run browser.js
+
+# If you don't have k6 installed (and you don't have Chrome/Chromium installed)
+docker run --rm -i --network=pulpocon_default --cap-add=SYS_ADMIN grafana/k6:master-with-browser run  -e BASE_URL=http://quickpizza:3333 - <browser.js
+# Note: When using the `k6:master-with-browser` Docker image, you need to add `--cap-add=SYS_ADMIN`
+# to grant further system permissions on the host for the Docker container.
+# Note2: If you are using a MacBook M1/M2 --> This approach will crash, you will need to use local k6.
+```
+
+Then, open the `screenshot.png` file. You should see a screenshot of the QuickPizza page with a pizza recommendation.
+
+#### 2.4.2. Composability
+
+In k6, you can mix and match the features you need to test what you really need to test.
+
+For example, you can use k6 to generate some constant load in your HTTP API while using the Browser APIs to test your web app to understand better how the frontend behaves and what your users are experiencing when using your app.
+
+Accomplishing this is easy with Scenarios. You can define multiple scenarios, each one with its own configuration. Then, you can run them all at the same time.
+
+Let's try it out! Create a new script named `mixed.js` with the following content:
+```javascript
+import http from "k6/http";
+import { check, sleep } from "k6";
+import { browser } from "k6/experimental/browser";
+
+const BASE_URL = __ENV.BASE_URL || 'http://localhost:3333';
+
+export const options = {
+  scenarios: {
+    smoke: {
+      exec: "getPizza",
+      executor: "constant-vus",
+      vus: 1,
+      duration: "10s",
+    },
+    stress: {
+      exec: "getPizza",
+      executor: "ramping-vus",
+      stages: [
+        { duration: '5s', target: 5 },
+        { duration: '10s', target: 5 },
+        { duration: '5s', target: 0 },
+      ],
+      gracefulRampDown: "5s",
+      startTime: "10s",
+    },
+    browser: {
+      exec: "checkFrontend",
+      executor: "constant-vus",
+      vus: 1,
+      duration: "30s",
+      options: {
+        browser: {
+          type: "chromium",
+        },
+      },
+    }
+  },
+};
+
+export function getPizza() {
+  let restrictions = {
+    maxCaloriesPerSlice: 500,
+    mustBeVegetarian: false,
+    excludedIngredients: ["pepperoni"],
+    excludedTools: ["knife"],
+    maxNumberOfToppings: 6,
+    minNumberOfToppings: 2
+  }
+  let res = http.post(`${BASE_URL}/api/pizza`, JSON.stringify(restrictions), {
+    headers: {
+      'Content-Type': 'application/json',
+      'X-User-ID': 1231231,
+    },
+  });
+  check(res, { "status is 200": (res) => res.status === 200 });
+  console.log(`${res.json().pizza.name} (${res.json().pizza.ingredients.length} ingredients)`);
+  sleep(1);
+}
+
+export async function checkFrontend() {
+  const page = browser.newPage();
+
+  try {
+    await page.goto(BASE_URL)
+    check(page, {
+      'header': page.locator('h1').textContent() == 'Looking to break out of your pizza routine?',
+    });
+
+    await page.locator('//button[. = "Pizza, Please!"]').click();
+    page.waitForTimeout(500);
+    page.screenshot({ path: `screenshots/${__ITER}.png` });
+    check(page, {
+      'recommendation': page.locator('div#recommendations').textContent() != '',
+    });
+  } finally {
+    page.close();
+  }
+}
+```
+
+That's it. Now you should be able to run it as you would do with any test, and you get the best of both worlds!
+
+#### 2.4.3. Extensions
+
+https://k6.io/docs/extensions/guides/build-a-k6-binary-using-docker/
 
 ## 3. CI
 
