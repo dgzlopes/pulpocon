@@ -363,7 +363,7 @@ In case you have time (now or later), here are some more things that you can lea
 
 In k6, there are four lifecycle stages.
 
-```json
+```javascript
 // 1. init code
 
 export function setup() {
