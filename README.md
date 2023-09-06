@@ -357,19 +357,100 @@ You should see a dashboard with some metrics, that are being updated in real tim
 
 ### 1.8. More stuff
 
-In case you have time (now or later), here are some more things that you can try out.
+In case you have time (now or later), here are some more things that you can learn about and try out.
 
 #### 1.8.1. Lifecycle
-TBD
 
-#### 1.8.2. Environment variables
-TBD
+In k6, there are four lifecycle stages.
 
-#### 1.8.3. CLI overrides 
-TBD
+```json
+// 1. init code
 
-#### 1.8.4. Custom metrics
-TBD
+export function setup() {
+  // 2. setup code
+}
+
+export default function (data) {
+  // 3. VU code
+}
+
+export function teardown(data) {
+  // 4. teardown code
+}
+```
+
+- Code in the init context prepares the script, loading files, importing modules, and defining the test lifecycle functions. **Required**.
+- The setup function runs, setting up the test environment and generating data. *Optional*.
+- VU code runs in the default or scenario (we mention this later) function, running for as long and as many times as the options define. **Required**.
+- The teardown function runs, postprocessing data and closing the test environment. *Optional*.
+
+You can use the lifecycle functions to do things like, not running the test if the service is down! You could do something like that by adding the following code to your script:
+```javascript
+export function setup() {
+  let res = http.get(BASE_URL)
+  if (res.status !== 200) {
+    throw new Error(`Got unexpected status code ${res.status} when trying to setup. Exiting.`)
+  }
+}
+```
+
+#### 1.8.2. CLI overrides and environment variables
+
+Most things you can configure in the `options` block can also be overridden via the CLI. For example, you can override the number of VUs with the `--vus` flag and the duration with the `--duration` flag.
+
+That means that the same script can be used to run different tests. You can have a single script that you can use to run a smoke test, a load test, a soak test, etc. You just need to change the CLI arguments!
+
+Alternatively, you can control the test configuration via environment variables. We have many of them, but you can also create your own and modify your script's behavior based on them. Also, you can use environment variables to pass secrets to your script (e.g., API keys).
+
+You can pass environment variables to k6 in multiple ways:
+```bash
+k6 run -e MY_ENV_VAR=123 example.js
+# or
+MY_ENV_VAR=123 k6 run example.js
+```
+
+Then, you can use it in your script with the `__ENV` object:
+```javascript
+console.log(__ENV.MY_ENV_VAR);
+```
+
+If you noticed, we have been using the `BASE_URL` environment variable to pass the URL of the QuickPizza service to our script. That's why we can run the same script locally and in Docker without changing anything!
+
+#### 1.8.3. Custom metrics
+
+By default, k6 automatically collects built-in metrics. Besides built-ins, you can also make custom metrics.
+
+Metrics fall into four broad types:
+
+- Counters: sum values.
+- Gauges: track the smallest, largest, and latest values.
+- Rates: track how frequently a non-zero value occurs.
+- Trends: calculates statistics for multiple values (like mean, mode or percentile).
+
+You can create them by using our metrics library. Let's try it out!
+
+For QuickPizza, let's create a custom metric to track the number of pizzas that have been recommended and another one to track the number of ingredients each pizza has. You first need to import the metrics library:
+```javascript
+import { Trend, Counter } from "k6/metrics";
+```
+
+Then, you can create the metrics:
+```javascript
+// Put this after the options block, outside of the default function
+const pizzas = new Counter('quickpizza_number_of_pizzas');
+const ingredients = new Trend('quickpizza_ingredients');
+```
+
+Later, in the default function, you can use your metrics after the HTTP request is made:
+```javascript
+// We increment the number of pizzas by 1
+pizzas.add(1);
+
+// We add the number of ingredients of the pizza to the trend
+ingredients.add(res.json().pizza.ingredients.length);
+```
+
+When you run the test, you should be able to see these new metrics in the summary section of the output.
 
 ## 2. Advanced
 
