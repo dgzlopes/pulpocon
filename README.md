@@ -16,7 +16,7 @@ Useful links: Slides, [k6 docs](https://k6.io/docs/)
   * [1.5. Thresholds](#15-thresholds)
   * [1.6. Import data from a file](#16-import-data-from-a-file)
   * [1.7. Visualize the results over time with Prometheus and Grafana](#17-visualize-the-results-over-time-with-prometheus-and-grafana)
-  * [1.6. Extra: More stuff](#16-extra--more-stuff)
+  * [1.6. More stuff](#16-more-stuff)
     + [1.6.1. Lifecycle](#161-lifecycle)
     + [1.6.2. Environment variables](#162-environment-variables)
     + [1.6.3. CLI overrides](#163-cli-overrides)
@@ -24,7 +24,7 @@ Useful links: Slides, [k6 docs](https://k6.io/docs/)
 - [2. Advanced](#2-advanced)
   * [2.1. Scenarios](#21-scenarios)
   * [2.2. Libraries](#22-libraries)
-  * [2.3. Extra: More stuff](#23-extra--more-stuff)
+  * [2.3. More stuff](#23-more-stuff)
     + [2.3.1 Browser](#231-browser)
     + [2.3.2. Composability](#232-composability)
     + [2.3.3. Extensions](#233-extensions)
@@ -355,7 +355,7 @@ You should see a dashboard with some metrics, that are being updated in real tim
 
 > TIP: Because of how Prometheus metrics work, metrics will be active for five minutes after the last flushed sample. This can be confusing b/c metrics will keep going with the last value even if the test has already finished. To avoid this, you can use the following environment variable: `K6_PROMETHEUS_RW_STALE_MARKERS=true`.
 
-### 1.6. Extra: More stuff
+### 1.6. More stuff
 
 In case you have time (now or later), here are some more things that you can try out.
 
@@ -379,7 +379,7 @@ TBD
 ### 2.2. Libraries
 TBD
 
-### 2.3. Extra: More stuff
+### 2.3. More stuff
 
 #### 2.3.1 Browser
 
