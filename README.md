@@ -2,6 +2,40 @@
 
 Useful links: Slides, [k6 docs](https://k6.io/docs/)
 
+- [0. Before we start](#0-before-we-start)
+  * [0.1. Introduction](#01-introduction)
+  * [0.2. Requirements](#02-requirements)
+  * [0.3.  Run the local playground](#03--run-the-local-playground)
+- [1. Foundations](#1-foundations)
+  * [1.1. What the heck is Grafana k6](#11-what-the-heck-is-grafana-k6)
+  * [1.2. Run your first test](#12-run-your-first-test)
+  * [1.3. VUs and iterations](#13-vus-and-iterations)
+    + [1.3.1. Think time](#131-think-time)
+    + [1.3.2. Stages](#132-stages)
+  * [1.4. Checks](#14-checks)
+  * [1.5. Thresholds](#15-thresholds)
+  * [1.6. Import data from a file](#16-import-data-from-a-file)
+  * [1.7. Visualize the results over time with Prometheus and Grafana](#17-visualize-the-results-over-time-with-prometheus-and-grafana)
+  * [1.6. Extra: More stuff](#16-extra--more-stuff)
+    + [1.6.1. Lifecycle](#161-lifecycle)
+    + [1.6.2. Environment variables](#162-environment-variables)
+    + [1.6.3. CLI overrides](#163-cli-overrides)
+    + [1.6.4. Custom metrics](#164-custom-metrics)
+- [2. Advanced](#2-advanced)
+  * [2.1. Scenarios](#21-scenarios)
+  * [2.2. Libraries](#22-libraries)
+  * [2.3. Extra: More stuff](#23-extra--more-stuff)
+    + [2.3.1 Browser](#231-browser)
+    + [2.3.2. Composability](#232-composability)
+    + [2.3.3. Extensions](#233-extensions)
+- [3. CI](#3-ci)
+  * [GitHub](#github)
+  * [GitLab](#gitlab)
+- [4. More things](#4-more-things)
+
+<small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
+
+
 ##  0. Before we start
 
 ### 0.1. Introduction
@@ -33,7 +67,7 @@ If you see a pizza recommendation, that's good!
 Also, open http://localhost:3000 and verify that you can see a Grafana instance.
     
 ## 1. Foundations
-### 1.1. What the heck is Grafana k6?
+### 1.1. What the heck is Grafana k6
 ### 1.2. Run your first test
 
 To run your first test, copy the following script:
@@ -321,7 +355,7 @@ You should see a dashboard with some metrics, that are being updated in real tim
 
 > TIP: Because of how Prometheus metrics work, metrics will be active for five minutes after the last flushed sample. This can be confusing b/c metrics will keep going with the last value even if the test has already finished. To avoid this, you can use the following environment variable: `K6_PROMETHEUS_RW_STALE_MARKERS=true`.
 
-### 1.6. Extra: More stuff!
+### 1.6. Extra: More stuff
 
 In case you have time (now or later), here are some more things that you can try out.
 
@@ -345,9 +379,9 @@ TBD
 ### 2.2. Libraries
 TBD
 
-### 2.3. Extra: More stuff!
+### 2.3. Extra: More stuff
 
-#### 2.4.1 Browser
+#### 2.3.1 Browser
 
 Even though we have been using HTTP requests so far, k6 is not limited to that. You can use it to test all kinds of things! It natively supports other protocols like gRPC, WebSockets, and Redis - and you can extend it to support more (we chat a bit about extensions later on!).
 
@@ -412,7 +446,7 @@ docker run --rm -i --network=pulpocon_default --cap-add=SYS_ADMIN grafana/k6:mas
 
 Then, open the `screenshot.png` file. You should see a screenshot of the QuickPizza page with a pizza recommendation.
 
-#### 2.4.2. Composability
+#### 2.3.2. Composability
 
 In k6, you can mix and match the features you need to test what you really need to test.
 
@@ -504,7 +538,7 @@ export async function checkFrontend() {
 
 That's it. Now you should be able to run it as you would do with any test, and you get the best of both worlds!
 
-#### 2.4.3. Extensions
+#### 2.3.3. Extensions
 
 https://k6.io/docs/extensions/guides/build-a-k6-binary-using-docker/
 
@@ -514,7 +548,7 @@ https://k6.io/docs/extensions/guides/build-a-k6-binary-using-docker/
 
 ### GitLab
 
-## 4. More things?
+## 4. More things
 
 Yup, there are more things! But we only had time to cover some of them.
 
