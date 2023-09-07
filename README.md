@@ -42,10 +42,11 @@ Useful links: Slides, [k6 docs](https://k6.io/docs/)
 ### 0.2. Requirements
 - Docker & Docker Compose
 - git
-- Optional (but recommended): GitHub account 
+- GitHub account 
 - Optional (but recommended): [k6](https://k6.io/docs/get-started/installation/)
-  - You can run it inside Docker, but the experience is better if you install it locally for learning. 
-    - You get nice colors and dynamic progress bars!  
+  - You can run it inside Docker, but the experience is better if you install it locally. 
+    - You get nice colors and dynamic progress bars!
+    - Also, it is just a binary, so you can easily remove it afterward if you don't want it.
 
 ###  0.3.  Run the local playground
 
