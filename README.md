@@ -20,6 +20,7 @@ Useful links: [Slides](https://docs.google.com/presentation/d/18UYpWkTqb8m01kiZx
     + [1.8.1. Lifecycle](#181-lifecycle)
     + [1.8.2. CLI overrides and environment variables](#182-cli-overrides-and-environment-variables)
     + [1.8.3. Custom metrics](#183-custom-metrics)
+    + [1.8.4. Custom summary](#184-custom-summary)
 - [2. Advanced](#2-advanced)
   * [2.1. Scenarios](#21-scenarios)
   * [2.2. Modules](#22-modules)
@@ -27,6 +28,7 @@ Useful links: [Slides](https://docs.google.com/presentation/d/18UYpWkTqb8m01kiZx
     + [2.3.1 Browser](#231-browser)
     + [2.3.2. Composability](#232-composability)
     + [2.3.3. Extensions](#233-extensions)
+    + [2.3.4. Websockets](#234-websockets)
 - [3. Running k6 in CI](#3-running-k6-in-ci)
   * [a. GitHub Actions](#a-github-actions)
     + [a.1. Running the test continuously](#a1-running-the-test-continuously)
@@ -472,6 +474,32 @@ When you run the test, you should be able to see these new metrics in the summar
 
 You can learn more about metrics [in our docs](https://k6.io/docs/using-k6/metrics/).
 
+#### 1.8.4. Custom summary
+
+You have already seen multiple times the end-of-test summary. You can customize it! 
+
+To customize it, you need to leverage the `handleSummary` function. 
+
+After your test runs, k6 aggregates your metrics into a JavaScript object. The `handleSummary()`` function takes this object as an argument (called data in all examples here).
+
+Use `handleSummary()`` to create a custom summary or return the default object.
+
+Let's try it out. Add, at the end of your script, the following:
+```javascript
+export function handleSummary(data) {
+  return {
+    'summary.json': JSON.stringify(data), //the default data object
+  };
+}
+```
+If you run the test again, you should see a new file named `summary.json` with all the data the summary would have.
+
+Fundamentally, `handleSummary()`` is just a function that can access a data object. As such, you can transform the summary data into any text format: JSON, HTML, console, XML, and so on. You can pipe your custom summary to standard output or standard error, write it to a file, or send it to a remote server.
+
+k6 calls `handleSummary()`` at the end of the test lifecycle.
+
+You can learn more about this [in our docs](https://k6.io/docs/results-output/end-of-test/custom-summary/).
+
 ## 2. Advanced
 
 ### 2.1. Scenarios
@@ -738,6 +766,49 @@ Many extensions (official and from the community) are already available. Lots of
 Once you have an extension you want to try, you can easily build a new k6 binary that has it [with our Docker instructions](https://k6.io/docs/extensions/guides/build-a-k6-binary-using-docker/).
 
 If you want to learn more about extensions, you can [check our docs](https://k6.io/docs/extensions/). If you want to create your own (spoiler: it is pretty easy), you can read this [little guide](https://k6.io/docs/extensions/get-started/create/).
+
+#### 2.3.4. WebSockets
+
+Before, we mentioned that k6 supports WebSockets. QuickPizza also has a WebSockets endpoint.
+
+If multiple people have QuickPiza open, and one asks for a recommendation, the other people will get a little nudge telling them that someone already got a recommendation. Let's try to replicate that.
+
+You could use the script you already have, but for simplicity, we will create a new one. 
+
+Create a new file named `websockets.js` with the following content:
+```javascript
+import { randomIntBetween } from 'https://jslib.k6.io/k6-utils/1.1.0/index.js';
+import { WebSocket } from 'k6/experimental/websockets';
+import { setInterval } from 'k6/experimental/timers';
+
+const BASE_URL = __ENV.BASE_URL || 'ws://localhost:3333';
+
+export default function () {
+    const ws = new WebSocket(`${BASE_URL}/ws`);
+    ws.addEventListener('open', () => {
+        // new recommendation every 2-8s
+        const t = setInterval(() => {
+            ws.send(JSON.stringify({ user: `VU ${__VU}`, msg: "new_pizza" }));
+        }, randomIntBetween(2000, 8000));
+
+        // listen for messages/errors and log them into console
+        ws.addEventListener('message', (e) => {
+            const msg = JSON.parse(e.data);
+            console.log(`VU ${__VU} received: ${msg.user} msg: ${msg.msg}`);
+        });
+    });
+}
+```
+
+Then, run it. If you open QuickPizza in a new tab (or refresh the existing tab), you will see how the little nudge appears and keeps telling you that someone is getting a recommendation.
+
+![nudge](./media/nudge.png)
+
+> NOTE: If you run it with Docker, adapt the BASE_URL to `ws://quickpizza:3333`.
+
+The example above will run forever. Not good. In a real situation, you would use sessions/timers and more fancy stuff, but this should at least give you a basic idea of how you can use WebSockets in k6.  
+
+You can learn more about WebSockets [in our docs](https://k6.io/docs/javascript-api/k6-experimental/websockets/).
 
 ## 3. Running k6 in CI
 
