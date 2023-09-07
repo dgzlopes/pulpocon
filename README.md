@@ -30,7 +30,7 @@ Useful links: Slides, [k6 docs](https://k6.io/docs/)
 - [3. Running k6 in CI](#3-running-k6-in-ci)
   * [a. GitHub Actions](#a-github-actions)
     + [a.1. Running the test continuously](#a1-running-the-test-continuously)
-    + [a.2. Other CI providers](#a2-other-ci-providers)
+  * [b. Other CI providers](#b-other-ci-providers)
 - [4. More things](#4-more-things)
 
 <small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
@@ -801,7 +801,7 @@ on:
     - cron: '*/15 * * * *'
 ```
 
-#### a.2. Other CI providers
+### b. Other CI providers
 
 Even if the instructions above target GitHub actions, you can try this section in any CI provider! 
 
