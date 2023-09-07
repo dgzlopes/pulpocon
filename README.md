@@ -830,7 +830,7 @@ It is our Cloud offering. It is the natural continuation of k6 OSS.
 
 You can run your test locally, as we did until now, and stream the results to our Cloud to easily persist, analyze, and compare them. Alternatively, you can run them all over the world by switching from `k6 run` to `k6 cloud` in the CLI - as easy as that. All that, plus lots of more useful features and a very deep integration with Grafana, so you can correlate all your internal data with your test's data!
 
-We have an **actually useful** free tier, so, yeah, if that sounds interesting, [give it a look](https://grafana.com/products/cloud/k6/)! - and if you have any questions, feel free to ask!
+We have an **actually useful** free tier, so, yeah, if that sounds interesting, [give it a look](https://grafana.com/products/cloud/k6/) - and if you have any questions, feel free to ask!
 
 ![cloud](./media/cloud.png)
 
