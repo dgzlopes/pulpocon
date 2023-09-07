@@ -217,6 +217,8 @@ check(res, {
 });
 ```
 
+You can learn more about checks [in our docs](https://k6.io/docs/using-k6/checks/).
+
 ### 1.5. Thresholds
 
 Thresholds are the pass/fail criteria you define for your test metrics. If the performance of the system under test (SUT) does not meet the conditions of your threshold, the test finishes with a failed status. That means that k6 will exit with a non-zero exit code. You can leverage standard metrics that k6 generates or custom metrics that you define in your script (we will see more about this later).
@@ -275,6 +277,8 @@ export let options = {
 };
 ```
 
+You can learn more about thresholds [in our docs](https://k6.io/docs/using-k6/thresholds/).
+
 ### 1.6. Import data from a file
 
 So far, we have been using hard-coded data. Let's change that! 
@@ -326,6 +330,8 @@ If you check the logs of the QuickPizza service, you should see that the custome
 
 You verify this by running `docker-compose logs quickpizza`.
 
+You can learn more about data parameterization in k6 [in our docs](https://k6.io/docs/examples/data-parameterization/).
+
 ### 1.7. Visualize the results over time with Prometheus and Grafana
 
 The output of k6 is nice, but it's not possible understand how the metrics evolved over time.
@@ -354,6 +360,8 @@ You should see a dashboard with some metrics, that are being updated in real tim
 > NOTE: Why is this feature experimental? Only because it has been added pretty recently to k6. But it is already very stable and used by lots of people.
 
 > TIP: Because of how Prometheus metrics work, metrics will be active for five minutes after the last flushed sample. This can be confusing b/c metrics will keep going with the last value even if the test has already finished. To avoid this, you can use the following environment variable: `K6_PROMETHEUS_RW_STALE_MARKERS=true`.
+
+You can learn more about [outputs](https://k6.io/docs/results-output/overview/) in our docs.
 
 ### 1.8. More stuff
 
@@ -394,6 +402,8 @@ export function setup() {
 }
 ```
 
+You can learn more about the lifecycle functions [in our docs](https://k6.io/docs/using-k6/test-lifecycle/).
+
 #### 1.8.2. CLI overrides and environment variables
 
 Most things you can configure in the `options` block can also be overridden via the CLI. For example, you can override the number of VUs with the `--vus` flag and the duration with the `--duration` flag.
@@ -415,6 +425,8 @@ console.log(__ENV.MY_ENV_VAR);
 ```
 
 If you noticed, we have been using the `BASE_URL` environment variable to pass the URL of the QuickPizza service to our script. That's why we can run the same script locally and in Docker without changing anything!
+
+You can learn more about [how options work](https://k6.io/docs/using-k6/k6-options/how-to/) and [environment variables](https://k6.io/docs/using-k6/environment-variables/) in our docs.
 
 #### 1.8.3. Custom metrics
 
@@ -452,10 +464,54 @@ ingredients.add(res.json().pizza.ingredients.length);
 
 When you run the test, you should be able to see these new metrics in the summary section of the output.
 
+You can learn more about metrics [in our docs](https://k6.io/docs/using-k6/metrics/).
+
 ## 2. Advanced
 
 ### 2.1. Scenarios
-TBD
+
+Scenarios configure how VUs and iteration are executed in a more fine-grained way. With scenarios, you can model diverse workloads, or traffic patterns in your tests.
+
+Benefits of using scenarios include:
+
+- Easier, more flexible test organization.
+- Simulate more realistic traffic. 
+- Parallel or sequential workloads. 
+- Granular results analysis.
+
+Let's try it out! To use scenarios, you need to change the `options` - an example is:
+```javascript
+export let options = {
+  scenarios: {
+    smoke: {
+      executor: "constant-vus",
+      vus: 1,
+      duration: "10s",
+    },
+    load: {
+      executor: "ramping-vus",
+      startVUs: 0,
+      stages: [
+        { duration: '5s', target: 5 },
+        { duration: '10s', target: 5 },
+        { duration: '5s', target: 0 },
+      ],
+      gracefulRampDown: "5s",
+      startTime: "10s",
+    },
+  },
+};
+```
+
+In this case, we have defined two scenarios: `smoke` and `load`. The `smoke` scenario will run with a single VU for 10 seconds. The `load` scenario will ramp up from 0 to 5 VUs in 5 seconds, stay at 5 VUs for 10 seconds, and then ramp down to 0 VUs in 5 seconds. The second scenario will start 10 seconds after the first one.
+
+As you can see, we are using two types of executors, `constant-vus` and `ramping-vus`. These are similar to what we have seen earlier and are focused on VUs. But other executors are focused on the number of iterations and iteration rate (e.g., `per-vu-iterations` and `constant-arrival-rate`). 
+
+Let's change our script to use scenarios and rerun the test. If you are running k6 locally, you should see two progress bars, one for each scenario, telling you how many VUs are running and how your test behaves in real time.
+
+> TIP: You can use `exec` to run a specific function in your script instead of the default function. For example, you could configure a scenario to run the `functionA` function, and another scenario to run the `functionB` function. If you don't specify an `exec` property, k6 will run the default function. 
+
+You can learn more about scenarios [in our docs](https://k6.io/docs/using-k6/scenarios/).
 
 ### 2.2. Libraries
 TBD
@@ -513,19 +569,23 @@ export default async function () {
 
 There are things in the script that we have already talked about, like Checks and Scenarios. But there are also new things, like the `browser` import and the `page` object. These APIs that k6 provides will drive a real browser under the hood. In this script, we go to the QuickPizza page, click the big button, take a screenshot of the result, and verify that the recommendation is not empty. 
 
-To run this script, you must have a Chromium browser installed if you run k6 locally. You can also run this test with a particular Docker image if you don't have it. Just run:
+To run this script, you must have a Chromium browser installed if you run k6 locally:
 ```bash
 # If you have k6 installed
 k6 run browser.js
+```
 
-# If you don't have k6 installed (and you don't have Chrome/Chromium installed)
+If you want to use Docker, you can:
+```bash
 docker run --rm -i --network=pulpocon_default --cap-add=SYS_ADMIN grafana/k6:master-with-browser run  -e BASE_URL=http://quickpizza:3333 - <browser.js
-# Note: When using the `k6:master-with-browser` Docker image, you need to add `--cap-add=SYS_ADMIN`
-# to grant further system permissions on the host for the Docker container.
-# Note2: If you are using a MacBook M1/M2 --> This approach will crash, you will need to use local k6.
+
+# Note: The following won't give you access to the screenshot.
+# Note2: If you are using a MacBook M1/M2 --> Make sure to add `--platform linux/amd64` and make sure you have rosetta installed and virtualization enabled in Docker.
 ```
 
 Then, open the `screenshot.png` file. You should see a screenshot of the QuickPizza page with a pizza recommendation.
+
+You can learn more about the Browser APIs [in our docs](https://k6.io/docs/using-k6-browser/overview/).
 
 #### 2.3.2. Composability
 
@@ -618,6 +678,8 @@ export async function checkFrontend() {
 ```
 
 That's it. Now you should be able to run it as you would do with any test, and you get the best of both worlds!
+
+You can read more about that scenario in [this section](https://k6.io/docs/using-k6-browser/running-browser-tests/#run-both-browser-level-and-protocol-level-tests-in-a-single-script) of our docs.
 
 #### 2.3.3. Extensions
 
