@@ -818,7 +818,7 @@ We have guides for many of them. You can check them out [here](https://k6.io/doc
 
 ## 4. More things
 
-Wow, if you have reached this point, you have learned a lot about k6! But, there is more!
+Wow, if you have reached this point, you have learned a lot about k6. But, there is more!
 
 Our docs page is the best place to learn about all the things we missed and more: https://k6.io/docs/
 
@@ -830,13 +830,13 @@ It is our Cloud offering. It is the natural continuation of k6 OSS.
 
 You can run your test locally, as we did until now, and stream the results to our Cloud to easily persist, analyze, and compare them. Alternatively, you can run them all over the world by switching from `k6 run` to `k6 cloud` in the CLI - as easy as that. All that, plus lots of more useful features and a very deep integration with Grafana, so you can correlate all your internal data with your test's data!
 
-We have an **actually useful** free tier, so, yeah, if that sounds interesting, [give it a look](https://grafana.com/products/cloud/k6/) - and if you have any questions, feel free to ask!
+We have an **actually useful** free tier, so, yeah, if that sounds interesting, [give it a look](https://grafana.com/products/cloud/k6/) - and if you have any questions, feel free to ask.
 
 ![cloud](./media/cloud.png)
 
 ### 4.2. Fault Injection
 
-We have a fault injection library! It is called [Disruptor](https://k6.io/docs/javascript-api/xk6-disruptor/). 
+We have a fault injection library. It is called [Disruptor](https://k6.io/docs/javascript-api/xk6-disruptor/). 
 
 It is a library that allows you to inject faults into your system under test. You can use it to test how your system behaves when things go wrong. For example, you can use it to test how your system behaves when a service is down, or when a service is slow, or when a service returns an error, etc.
 
