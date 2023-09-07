@@ -539,7 +539,15 @@ Finally, use it in your script:
 console.log(getPizzaName(res));
 ```
 
-Then, rerun the script. You should see the pizza name in the output.
+Then, rerun the script. You should see an additional log line with the pizza name in the output.
+
+```bash
+# If you have k6 installed
+k6 run example.js
+
+# If you don't have k6 installed (you need to mount the extra file)
+docker run -i --network=pulpocon_default -v $(pwd)/utils.js:/utils.js grafana/k6 run -e BASE_URL=http://quickpizza:3333  - <example.js
+```
 
 You can learn more about modules [in our docs](https://k6.io/docs/using-k6/modules/).
 
@@ -726,6 +734,79 @@ If you want to learn more about extensions, you can [check our docs](https://k6.
 ## 3. CI
 
 ### a. GitHub
+.github/workflows/main.yml
+```yaml
+name: Testing QuickPizza
+on: push
+
+jobs:
+  runner-job:
+    runs-on: ubuntu-latest
+
+    services:
+      quickpizza:
+        image: ghcr.io/grafana/quickpizza-local:0.2.0
+        ports:
+          - 3333:3333
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+  
+      - name: Run local k6 test
+        uses: grafana/k6-action@v0.2.0
+        with:
+          filename: script.js
+        env:
+          BASE_URL: "http://quickpizza:3333"
+```
+
+script.js
+```javascript
+import http from "k6/http";
+import {sleep} from "k6";
+
+const BASE_URL = __ENV.BASE_URL || 'http://localhost:3333';
+
+export let options = {
+  stages: [
+    { duration: "5s", target: 10 },
+    { duration: "10s", target: 10 },
+    { duration: "5s", target: 0 },
+  ],
+  thresholds: {
+    "http_req_duration": ["p(95)<5000"],
+  },
+};
+
+export default function () {
+  let restrictions = {
+    maxCaloriesPerSlice: 500,
+    mustBeVegetarian: false,
+    excludedIngredients: ["pepperoni"],
+    excludedTools: ["knife"],
+    maxNumberOfToppings: 6,
+    minNumberOfToppings: 2
+  }
+  let res = http.post(`${BASE_URL}/api/pizza`, JSON.stringify(restrictions), {
+    headers: {
+      'Content-Type': 'application/json',
+      'X-User-ID': 23423,
+    },
+  });
+  console.log(`${res.json().pizza.name} (${res.json().pizza.ingredients.length} ingredients)`);
+  sleep(1);
+}
+```
+
+With a Cron job - every 15 minutes
+```yaml
+on:
+  schedule:
+    # * is a special character in YAML, so you have to quote this string
+    - cron: '*/15 * * * *'
+```
+
 
 ### b. GitLab
 
