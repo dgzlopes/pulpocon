@@ -513,8 +513,35 @@ Let's change our script to use scenarios and rerun the test. If you are running 
 
 You can learn more about scenarios [in our docs](https://k6.io/docs/using-k6/scenarios/).
 
-### 2.2. Libraries
-TBD
+### 2.2. Modules
+
+k6 provides many built-in modules for core functionalities. For example, the http client make requests against the system under test. For the full list of built-in modules, refer to the [API documentation](https://k6.io/docs/javascript-api/).
+
+But, you can also create your own modules! You can use modules to share code between scripts, or to create a library of functions that you can use in your scripts.
+
+Creating a module is easy. You just need to create a file with the functions you want to export, and then import them in your script. Let's try it out!
+
+First, create a file named `utils.js` with the following content:
+```javascript
+export function getPizzaName(res) {
+  return res.json().pizza.name;
+}
+```
+
+Then, import it in your script:
+```javascript
+import { getPizzaName } from './utils.js';
+```
+
+Finally, use it in your script:
+```javascript
+// Use it after the HTTP request
+console.log(getPizzaName(res));
+```
+
+Then, rerun the script. You should see the pizza name in the output.
+
+You can learn more about modules [in our docs](https://k6.io/docs/using-k6/modules/).
 
 ### 2.3. More stuff
 
@@ -688,7 +715,13 @@ You can read more about that scenario in [this section](https://k6.io/docs/using
 
 #### 2.3.3. Extensions
 
-https://k6.io/docs/extensions/guides/build-a-k6-binary-using-docker/
+With k6 extensions, you can create custom k6 binaries to support your specific reliability-testing needs. These are written in Go and can be used to extend k6 with new protocols, outputs, etc. For example, you could create an extension to support a new protocol, like Kafka. Or, you could make an extension to export your metrics to a new backend, like InfluxDB.
+
+Many extensions (official and from the community) are already available. Lots of them are available in our [extension registry](https://k6.io/docs/extensions/get-started/bundle/).
+
+Once you have an extension you want to try, you can easily build a new k6 binary that has it [with our Docker instructions](https://k6.io/docs/extensions/guides/build-a-k6-binary-using-docker/).
+
+If you want to learn more about extensions, you can [check our docs](https://k6.io/docs/extensions/). If you want to create your own (spoiler: it is pretty easy), you can read this [little guide](https://k6.io/docs/extensions/get-started/create/).
 
 ## 3. CI
 
