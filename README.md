@@ -32,6 +32,9 @@ Useful links: [Slides](https://docs.google.com/presentation/d/18UYpWkTqb8m01kiZx
     + [a.1. Running the test continuously](#a1-running-the-test-continuously)
   * [b. Other CI providers](#b-other-ci-providers)
 - [4. More things](#4-more-things)
+  * [4.1. Grafana Cloud k6](#41-grafana-cloud-k6)
+  * [4.2. Fault Injection](#42-fault-injection)
+  * [4.3. Kubernetes Operator](#43-kubernetes-operator)
 
 <small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
 
@@ -815,15 +818,35 @@ We have guides for many of them. You can check them out [here](https://k6.io/doc
 
 ## 4. More things
 
-Yup, there are more things! But we only had time to cover some of them.
+Wow, if you have reached this point, you have learned a lot about k6! But, there is more!
 
-A big part we have missed is Grafana Cloud k6. It is our Cloud offering. It is the natural continuation of k6 OSS. 
+Our docs page is the best place to learn about all the things we missed and more: https://k6.io/docs/
+
+Still, here are a few things that we have missed that you might find interesting.
+
+### 4.1. Grafana Cloud k6
+
+It is our Cloud offering. It is the natural continuation of k6 OSS.
 
 You can run your test locally, as we did until now, and stream the results to our Cloud to easily persist, analyze, and compare them. Alternatively, you can run them all over the world by switching from `k6 run` to `k6 cloud` in the CLI - as easy as that. All that, plus lots of more useful features and a very deep integration with Grafana, so you can correlate all your internal data with your test's data!
 
-We have an actually useful free tier, so, yeah, if that sounds interesting, [give it a look](https://grafana.com/products/cloud/k6/)!
+We have an **actually useful** free tier, so, yeah, if that sounds interesting, [give it a look](https://grafana.com/products/cloud/k6/)! - and if you have any questions, feel free to ask!
 
-Also, we didn't cover the [Disruptor](https://k6.io/docs/javascript-api/xk6-disruptor/) (our take in fault injection), the [Operator](https://github.com/grafana/k6-operator) (run distributed tests in your Kubernetes clusters), etc. Our docs page is the best place to learn about all the things we missed and more: https://k6.io/docs/
+![cloud](./media/cloud.png)
+
+### 4.2. Fault Injection
+
+We have a fault injection library! It is called [Disruptor](https://k6.io/docs/javascript-api/xk6-disruptor/). 
+
+It is a library that allows you to inject faults into your system under test. You can use it to test how your system behaves when things go wrong. For example, you can use it to test how your system behaves when a service is down, or when a service is slow, or when a service returns an error, etc.
+
+If you want to get a quick overview of how it works, you can play [with this live demo environment that we have](https://killercoda.com/grafana-xk6-disruptor/scenario/killercoda).
+
+### 4.3. Kubernetes Operator
+
+Yup, we also have a [Kubernetes Operator](https://github.com/grafana/k6-operator)!
+
+If you have a Kubernetes cluster, you can use our Operator to run distributed tests in your cluster. You can use it to run tests with thousands of VUs, or to run tests that require a lot of resources (e.g., lots of CPU or memory).
 
 
 
