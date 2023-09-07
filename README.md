@@ -18,23 +18,22 @@ Useful links: Slides, [k6 docs](https://k6.io/docs/)
   * [1.7. Visualize the results over time with Prometheus and Grafana](#17-visualize-the-results-over-time-with-prometheus-and-grafana)
   * [1.8. More stuff](#18-more-stuff)
     + [1.8.1. Lifecycle](#181-lifecycle)
-    + [1.8.2. Environment variables](#182-environment-variables)
-    + [1.8.3. CLI overrides](#183-cli-overrides)
-    + [1.8.4. Custom metrics](#184-custom-metrics)
+    + [1.8.2. CLI overrides and environment variables](#182-cli-overrides-and-environment-variables)
+    + [1.8.3. Custom metrics](#183-custom-metrics)
 - [2. Advanced](#2-advanced)
   * [2.1. Scenarios](#21-scenarios)
-  * [2.2. Libraries](#22-libraries)
+  * [2.2. Modules](#22-modules)
   * [2.3. More stuff](#23-more-stuff)
     + [2.3.1 Browser](#231-browser)
     + [2.3.2. Composability](#232-composability)
     + [2.3.3. Extensions](#233-extensions)
-- [3. CI](#3-ci)
-  * [a. GitHub](#a-github)
-  * [b. GitLab](#b-gitlab)
+- [3. Running k6 in CI](#3-running-k6-in-ci)
+  * [a. GitHub Actions](#a-github-actions)
+    + [a.1. Running the test continuously](#a1-running-the-test-continuously)
+    + [a.2. Other CI providers](#a2-other-ci-providers)
 - [4. More things](#4-more-things)
 
 <small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
-
 
 ##  0. Before we start
 
@@ -43,7 +42,7 @@ Useful links: Slides, [k6 docs](https://k6.io/docs/)
 ### 0.2. Requirements
 - Docker & Docker Compose
 - git
-- GitHub/GitLab account
+- Optional (but recommended): GitHub account 
 - Optional (but recommended): [k6](https://k6.io/docs/get-started/installation/)
   - You can run it inside Docker, but the experience is better if you install it locally for learning. 
     - You get nice colors and dynamic progress bars!  
@@ -731,10 +730,19 @@ Once you have an extension you want to try, you can easily build a new k6 binary
 
 If you want to learn more about extensions, you can [check our docs](https://k6.io/docs/extensions/). If you want to create your own (spoiler: it is pretty easy), you can read this [little guide](https://k6.io/docs/extensions/get-started/create/).
 
-## 3. CI
+## 3. Running k6 in CI
 
-### a. GitHub
-.github/workflows/main.yml
+### a. GitHub Actions
+
+We are going to use GitHub Actions to run one of our tests. You can do this in multiple ways (manually installing it, with the Docker container, etc.), but in this case, we are going to use the [k6 GitHub Action](https://github.com/grafana/k6-action)
+
+Start by forking this repository:
+![fork](./media/fork.png)
+
+Then, go to your forked repository and edit the file `.github/workflows/main.yml`:
+![edit](./media/edit.png)
+
+Add the following to the file:
 ```yaml
 name: Testing QuickPizza
 on: push
@@ -761,45 +769,31 @@ jobs:
           BASE_URL: "http://quickpizza:3333"
 ```
 
-script.js
-```javascript
-import http from "k6/http";
-import {sleep} from "k6";
+This workflow will run every time you push something to your repository. It will start a QuickPizza container in the background and run the `script.js` script against it. You can see the contents of the script in the file `script.js`. 
 
-const BASE_URL = __ENV.BASE_URL || 'http://localhost:3333';
+The test is a very similar to the one you created earlier.
 
-export let options = {
-  stages: [
-    { duration: "5s", target: 10 },
-    { duration: "10s", target: 10 },
-    { duration: "5s", target: 0 },
-  ],
-  thresholds: {
-    "http_req_duration": ["p(95)<5000"],
-  },
-};
+That's it! For every new commit, GitHub will run your test and tell you if it passed or failed. Using the UI (as we did earlier to change the workflow), modify the README (any change will work), and commit the changes. 
 
-export default function () {
-  let restrictions = {
-    maxCaloriesPerSlice: 500,
-    mustBeVegetarian: false,
-    excludedIngredients: ["pepperoni"],
-    excludedTools: ["knife"],
-    maxNumberOfToppings: 6,
-    minNumberOfToppings: 2
-  }
-  let res = http.post(`${BASE_URL}/api/pizza`, JSON.stringify(restrictions), {
-    headers: {
-      'Content-Type': 'application/json',
-      'X-User-ID': 23423,
-    },
-  });
-  console.log(`${res.json().pizza.name} (${res.json().pizza.ingredients.length} ingredients)`);
-  sleep(1);
-}
-```
+Then, go to the Actions tab and see how the workflow is running.
 
-With a Cron job - every 15 minutes
+![actions](./media/actions.png)
+
+You can click on the workflow and then click on the runner-job box.
+
+There, you will see all the steps that were executed. You can click on each step to see the logs! 
+
+In the k6 step, you can see k6's output:
+
+![k6](./media/logs.png)
+
+The step will fail if thresholds are not met. You can test this quickly by replacing the threshold target with a tiny value, e.g., 1 instead of 5000, and triggering a new CI run. 
+
+As you can see, running k6 in CI is quite straightforward. If you you want a more extensive example, you can check [this blog post](https://k6.io/blog/load-testing-using-github-actions/) that goes much more in depth.
+
+#### a.1. Running the test continuously
+
+If you want to run the test continuously, for example, every 15 minutes, you can use a Cron job. To do that, you need to change the `on` property of the workflow:
 ```yaml
 on:
   schedule:
@@ -807,8 +801,11 @@ on:
     - cron: '*/15 * * * *'
 ```
 
+#### a.2. Other CI providers
 
-### b. GitLab
+Even if the instructions above target GitHub actions, you can try this section in any CI provider! 
+
+We have guides for many of them. You can check them out [here](https://k6.io/docs/integrations/#continuous-integration-and-continuous-delivery).
 
 ## 4. More things
 
