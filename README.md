@@ -127,6 +127,8 @@ In k6, we have two main concepts: Virtual Users (VUs) and iterations. A VU is a 
 
 You can think of it like a for-loop. You can have many of those; each one will run your script. The number of iterations is the number of times that your script will run. The number of VUs is the number of threads that will run your script.
 
+![vus and iterations](./media/vus.png)
+
 When you run a k6 test, by default, it will run your script once, with a single VU. This is useful to verify that your script is working as expected. However, it's not very useful to understand how your system behaves with sustained load for some time. You need to increase the number of VUs and change the test duration to do that.
 
 Let's try it out! After the imports, add a configuration block to your script:
