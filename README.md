@@ -183,9 +183,9 @@ export let options = {
 Then, rerun the script. 
 
 What's k6 doing?
-- During the first 30 seconds, k6 will ramp up from 0 to 10 VUs. 
-- Then, it will stay at 10 VUs for 1 minute. 
-- Finally, it will ramp down from 10 to 0 VUs in 30 seconds.
+- During the first 5 seconds, k6 will ramp up from 0 to 10 VUs. 
+- Then, it will stay at 10 VUs for 10 seconds.
+- Finally, it will ramp down from 10 to 0 VUs in 5 seconds.
 
 > NOTE: The output will be messy if you use Docker to run this test. You can fix that by adding the `--quiet` flag to the k6 command. Why? B/c while using the CLI, you would get a very nice progress bar, telling you how many VUs are running and how your test behaves in real-time. However, when using Docker, k6 will output the progress bar in the logs. 
 
@@ -226,7 +226,7 @@ You can learn more about checks [in our docs](https://k6.io/docs/using-k6/checks
 
 ### 1.5. Thresholds
 
-Thresholds are the pass/fail criteria you define for your test metrics. If the performance of the system under test (SUT) does not meet the conditions of your threshold, the test finishes with a failed status. That means that k6 will exit with a non-zero exit code. You can leverage standard metrics that k6 generates or custom metrics that you define in your script (we will see more about this later).
+Thresholds are the pass/fail criteria you define for your test metrics. If the the system under test (SUT) does not meet the conditions of your threshold, the test finishes with a failed status. That means that k6 will exit with a non-zero exit code. You can leverage standard metrics that k6 generates or custom metrics that you define in your script (we will see more about this later).
 
 Let's add a threshold to our script. You can do that by changing the `options` block to:
 ```javascript
@@ -262,8 +262,8 @@ export let options = {
 
 You can also inspect the status code of the test with:
 ```bash
-# If you have k6 installed
-k6 run example.js; echo $?
+# If you have k6 installed, run this after the test finishes
+echo $?
 
 # If you don't have k6 installed
 docker run -i --network=pulpocon_default grafana/k6 run -e BASE_URL=http://quickpizza:3333  - <example.js; echo $?
@@ -273,22 +273,20 @@ Then, rerun the script.
 
 There is another way of defining thresholds that is a bit more flexible. It even allows you to abort the test if a threshold fails. For example, you could rewrite the previous threshold as:
 ```javascript
-export let options = {
-  thresholds: {
-    "http_req_duration": [
-      { threshold: "p(95)<10", abortOnFail: false },
-    ],
-  },
-};
+thresholds: {
+  "http_req_duration": [
+    { threshold: "p(95)<10", abortOnFail: false },
+  ],
+},
 ```
 
 You can learn more about thresholds [in our docs](https://k6.io/docs/using-k6/thresholds/).
 
 ### 1.6. Import data from a file
 
-So far, we have been using hard-coded data. Let's change that! 
+So far, we have been using some hard-coded data. Let's change that! 
 
-We will make the customerID we add to every request dynamic, with data from a file.
+We will make the customerID we add to every request dynamic, with data from a JSON file.
 
 To accomplish that, we first need to create a file named `customers.json` with some customer id's:
 ```json
@@ -321,12 +319,12 @@ const customers = new SharedArray('all my customers', function () {
 
 Finally, we can use it in our script. Let's replace the HTTP request with:
 ```javascript
-  let res = http.post(`${BASE_URL}/api/pizza`, JSON.stringify(restrictions), {
-    headers: {
-      'Content-Type': 'application/json',
-      'X-User-ID': customers[Math.floor(Math.random() * customers.length)],
-    },
-  });
+let res = http.post(`${BASE_URL}/api/pizza`, JSON.stringify(restrictions), {
+  headers: {
+    'Content-Type': 'application/json',
+    'X-User-ID': customers[Math.floor(Math.random() * customers.length)],
+  },
+});
 ```
 
 That way, we will pick a random customer from the list of customers.  Then, rerun the script. 
@@ -629,6 +627,8 @@ docker cp <container_id>:/home/k6/screenshot.png .
 ```
 
 Then, open the `screenshot.png` file. You should see a screenshot of the QuickPizza page with a pizza recommendation.
+
+Also, you should be able to see the Checks we have defined in the output. Plus, lots of new metrics! These metrics are related to the performance of the page. You can use them to understand how your page is performing and how it is affecting your users. Lots of them are [Web Vitals metrics](https://web.dev/vitals/), which are a set of metrics that Google recommends to measure the user experience on the web.
 
 You can learn more about the Browser APIs [in our docs](https://k6.io/docs/using-k6-browser/overview/).
 
