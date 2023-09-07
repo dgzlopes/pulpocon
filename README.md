@@ -577,10 +577,15 @@ k6 run browser.js
 
 If you want to use Docker, you can:
 ```bash
-docker run --rm -i --network=pulpocon_default --cap-add=SYS_ADMIN grafana/k6:master-with-browser run  -e BASE_URL=http://quickpizza:3333 - <browser.js
+docker run -i --network=pulpocon_default --cap-add=SYS_ADMIN grafana/k6:master-with-browser run  -e BASE_URL=http://quickpizza:3333 - <browser.js
 
-# Note: The following won't give you access to the screenshot.
-# Note2: If you are using a MacBook M1/M2 --> Make sure to add `--platform linux/amd64` and make sure you have rosetta installed and virtualization enabled in Docker.
+# Find the container ID of that container you just ran
+docker container ls -a
+
+# Copy the screenshot to your local machine
+docker cp <container_id>:/home/k6/screenshot.png .
+
+# Note: If you are using a MacBook M1/M2 --> Make sure you have rosetta installed and virtualization enabled in Docker.
 ```
 
 Then, open the `screenshot.png` file. You should see a screenshot of the QuickPizza page with a pizza recommendation.
