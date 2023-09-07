@@ -47,6 +47,9 @@ Useful links: [Slides](https://docs.google.com/presentation/d/18UYpWkTqb8m01kiZx
   - You can run it inside Docker, but the experience is better if you install it locally. 
     - You get nice colors and dynamic progress bars!
     - Also, it is just a binary, so you can easily remove it afterward if you don't want it.
+  - If you plan to use Docker, please, pre-pull the images with:
+    - `docker pull grafana/k6`
+    - `docker pull grafana/k6:master-with-browser`
 
 ###  0.3.  Run the local playground
 
