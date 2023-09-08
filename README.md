@@ -21,18 +21,17 @@ Useful links: [Slides](https://docs.google.com/presentation/d/18UYpWkTqb8m01kiZx
     + [1.8.2. CLI overrides and environment variables](#182-cli-overrides-and-environment-variables)
     + [1.8.3. Custom metrics](#183-custom-metrics)
     + [1.8.4. Custom summary](#184-custom-summary)
-- [2. Advanced](#2-advanced)
+- [2. Running k6 in CI](#2-running-k6-in-ci)
+  * [a. GitHub Actions](#a-github-actions)
+  * [b. Other CI providers](#b-other-ci-providers)
+- [3. Advanced](#3-advanced)
   * [2.1. Scenarios](#21-scenarios)
   * [2.2. Modules](#22-modules)
   * [2.3. More stuff](#23-more-stuff)
     + [2.3.1 Browser](#231-browser)
     + [2.3.2. Composability](#232-composability)
     + [2.3.3. Extensions](#233-extensions)
-    + [2.3.4. Websockets](#234-websockets)
-- [3. Running k6 in CI](#3-running-k6-in-ci)
-  * [a. GitHub Actions](#a-github-actions)
-    + [a.1. Running the test continuously](#a1-running-the-test-continuously)
-  * [b. Other CI providers](#b-other-ci-providers)
+    + [2.3.4. WebSockets](#234-websockets)
 - [4. More things](#4-more-things)
   * [4.1. Grafana Cloud k6](#41-grafana-cloud-k6)
   * [4.2. Fault Injection](#42-fault-injection)
@@ -500,7 +499,74 @@ k6 calls `handleSummary()`` at the end of the test lifecycle.
 
 You can learn more about this [in our docs](https://k6.io/docs/results-output/end-of-test/custom-summary/).
 
-## 2. Advanced
+## 2. Running k6 in CI
+
+### a. GitHub Actions
+
+We are going to use GitHub Actions to run one of our tests. You can do this in multiple ways (manually installing it, with the Docker container, etc.), but in this case, we are going to use the [k6 GitHub Action](https://github.com/grafana/k6-action)
+
+Start by forking this repository:
+![fork](./media/fork.png)
+
+Then, go to your forked repository and edit the file `.github/workflows/main.yml`:
+![edit](./media/edit.png)
+
+Add the following to the file:
+```yaml
+name: Testing QuickPizza
+on: push
+
+jobs:
+  runner-job:
+    runs-on: ubuntu-latest
+
+    services:
+      quickpizza:
+        image: ghcr.io/grafana/quickpizza-local:0.2.0
+        ports:
+          - 3333:3333
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+  
+      - name: Run local k6 test
+        uses: grafana/k6-action@v0.2.0
+        with:
+          filename: script.js
+        env:
+          BASE_URL: "http://quickpizza:3333"
+```
+
+This workflow will run every time you push something to your repository. It will start a QuickPizza container in the background and run the `script.js` script against it. You can see the contents of the script in the file `script.js`. 
+
+The test is a very similar to the one you created earlier.
+
+That's it! For every new commit, GitHub will run your test and tell you if it passed or failed. Using the UI (as we did earlier to change the workflow), modify the README (any change will work), and commit the changes. 
+
+Then, go to the Actions tab and see how the workflow is running.
+
+![actions](./media/actions.png)
+
+You can click on the workflow and then click on the runner-job box.
+
+There, you will see all the steps that were executed. You can click on each step to see the logs! 
+
+In the k6 step, you can see k6's output:
+
+![k6](./media/logs.png)
+
+The step will fail if thresholds are not met. You can test this quickly by replacing the threshold target with a tiny value, e.g., 1 instead of 5000, and triggering a new CI run. 
+
+As you can see, running k6 in CI is quite straightforward. If you you want a more extensive example, you can check [this blog post](https://k6.io/blog/load-testing-using-github-actions/) that goes much more in depth.
+
+### b. Other CI providers
+
+Even if the instructions above target GitHub actions, you can try this section in any CI provider! 
+
+We have guides for many of them. You can check them out [here](https://k6.io/docs/integrations/#continuous-integration-and-continuous-delivery).
+
+## 3. Advanced
 
 ### 2.1. Scenarios
 
@@ -809,83 +875,6 @@ Then, run it. If you open QuickPizza in a new tab (or refresh the existing tab),
 The example above will run forever. Not good. In a real situation, you would use sessions/timers and more fancy stuff, but this should at least give you a basic idea of how you can use WebSockets in k6.  
 
 You can learn more about WebSockets [in our docs](https://k6.io/docs/javascript-api/k6-experimental/websockets/).
-
-## 3. Running k6 in CI
-
-### a. GitHub Actions
-
-We are going to use GitHub Actions to run one of our tests. You can do this in multiple ways (manually installing it, with the Docker container, etc.), but in this case, we are going to use the [k6 GitHub Action](https://github.com/grafana/k6-action)
-
-Start by forking this repository:
-![fork](./media/fork.png)
-
-Then, go to your forked repository and edit the file `.github/workflows/main.yml`:
-![edit](./media/edit.png)
-
-Add the following to the file:
-```yaml
-name: Testing QuickPizza
-on: push
-
-jobs:
-  runner-job:
-    runs-on: ubuntu-latest
-
-    services:
-      quickpizza:
-        image: ghcr.io/grafana/quickpizza-local:0.2.0
-        ports:
-          - 3333:3333
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v1
-  
-      - name: Run local k6 test
-        uses: grafana/k6-action@v0.2.0
-        with:
-          filename: script.js
-        env:
-          BASE_URL: "http://quickpizza:3333"
-```
-
-This workflow will run every time you push something to your repository. It will start a QuickPizza container in the background and run the `script.js` script against it. You can see the contents of the script in the file `script.js`. 
-
-The test is a very similar to the one you created earlier.
-
-That's it! For every new commit, GitHub will run your test and tell you if it passed or failed. Using the UI (as we did earlier to change the workflow), modify the README (any change will work), and commit the changes. 
-
-Then, go to the Actions tab and see how the workflow is running.
-
-![actions](./media/actions.png)
-
-You can click on the workflow and then click on the runner-job box.
-
-There, you will see all the steps that were executed. You can click on each step to see the logs! 
-
-In the k6 step, you can see k6's output:
-
-![k6](./media/logs.png)
-
-The step will fail if thresholds are not met. You can test this quickly by replacing the threshold target with a tiny value, e.g., 1 instead of 5000, and triggering a new CI run. 
-
-As you can see, running k6 in CI is quite straightforward. If you you want a more extensive example, you can check [this blog post](https://k6.io/blog/load-testing-using-github-actions/) that goes much more in depth.
-
-#### a.1. Running the test continuously
-
-If you want to run the test continuously, for example, every 15 minutes, you can use a Cron job. To do that, you need to change the `on` property of the workflow:
-```yaml
-on:
-  schedule:
-    # * is a special character in YAML, so you have to quote this string
-    - cron: '*/15 * * * *'
-```
-
-### b. Other CI providers
-
-Even if the instructions above target GitHub actions, you can try this section in any CI provider! 
-
-We have guides for many of them. You can check them out [here](https://k6.io/docs/integrations/#continuous-integration-and-continuous-delivery).
 
 ## 4. More things
 
