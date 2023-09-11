@@ -230,7 +230,7 @@ You can learn more about checks [in our docs](https://k6.io/docs/using-k6/checks
 
 ### 1.5. Thresholds
 
-Thresholds are the pass/fail criteria you define for your test metrics. If the the system under test (SUT) does not meet the conditions of your threshold, the test finishes with a failed status. That means that k6 will exit with a non-zero exit code. You can leverage standard metrics that k6 generates or custom metrics that you define in your script (we will see more about this later).
+Thresholds are the pass/fail criteria you define for your test metrics. If the system under test (SUT) does not meet the conditions of your threshold, the test finishes with a failed status. That means that k6 will exit with a non-zero exit code. You can leverage standard metrics that k6 generates or custom metrics that you define in your script (we will see more about this later).
 
 Let's add a threshold to our script. You can do that by changing the `options` block to:
 ```javascript
@@ -331,6 +331,8 @@ let res = http.post(`${BASE_URL}/api/pizza`, JSON.stringify(restrictions), {
 });
 ```
 
+> NOTE: If you are using docker, you need to mount the `customers.json` file. You can do that by adding the following flag to the docker command: `-v $(pwd)/customers.json:/customers.json`.
+
 That way, we will pick a random customer from the list of customers.  Then, rerun the script. 
 
 If you check the logs of the QuickPizza service, you should see that the customer id that we attach to every log line is changing all the time. 
@@ -343,7 +345,7 @@ You can learn more about data parameterization in k6 [in our docs](https://k6.io
 
 The output of k6 is nice, but it's not possible understand how the metrics evolved over time.
 
-To solve this, k6 has Outputs. These, let you export your metrics/logs to some other place, in real time. One of the most popular outputs is the Prometheus output. This output will export your metrics to a Prometheus instance so then, you can use Grafana to visualize the metrics in real time.
+To solve this, k6 has Outputs. These let you export your metrics/logs to some other place in real-time. One of the most popular outputs is the Prometheus output. This output will export your metrics to a Prometheus instance, so you can use Grafana to visualize the metrics in real time.
 
 The Docker Compose playground already has a Prometheus and Grafana instance running. So, let's use that!
 
@@ -503,12 +505,15 @@ You can learn more about this [in our docs](https://k6.io/docs/results-output/en
 
 ### a. GitHub Actions
 
-We are going to use GitHub Actions to run one of our tests. You can do this in multiple ways (manually installing it, with the Docker container, etc.), but in this case, we are going to use the [k6 GitHub Action](https://github.com/grafana/k6-action)
+We are going to use GitHub Actions to run one of our tests. You can do this in multiple ways (manually installing it, with the Docker container, etc.), but in this case, we are going to use the k6 GitHub Action.
 
-Start by forking this repository:
+Start by forking this repository  (yup, the pulpocon repo):
 ![fork](./media/fork.png)
 
-Then, go to your forked repository and edit the file `.github/workflows/main.yml`:
+In the forked repository, go to the Actions tab and click on the green button that enables GitHub Actions.
+![button](./media/button.png)
+
+After that, you can go to your forked repository and edit the file `.github/workflows/main.yml`:
 ![edit](./media/edit.png)
 
 Add the following to the file:
@@ -538,9 +543,9 @@ jobs:
           BASE_URL: "http://quickpizza:3333"
 ```
 
-This workflow will run every time you push something to your repository. It will start a QuickPizza container in the background and run the `script.js` script against it. You can see the contents of the script in the file `script.js`. 
+This workflow will run every time you push *something* to your repository. It will start a QuickPizza container in the background and run the `script.js` script against it. You can see the contents of the script in the file `script.js`. 
 
-The test is a very similar to the one you created earlier.
+The test is very similar to the one you created earlier.
 
 That's it! For every new commit, GitHub will run your test and tell you if it passed or failed. Using the UI (as we did earlier to change the workflow), modify the README (any change will work), and commit the changes. 
 
@@ -558,7 +563,7 @@ In the k6 step, you can see k6's output:
 
 The step will fail if thresholds are not met. You can test this quickly by replacing the threshold target with a tiny value, e.g., 1 instead of 5000, and triggering a new CI run. 
 
-As you can see, running k6 in CI is quite straightforward. If you you want a more extensive example, you can check [this blog post](https://k6.io/blog/load-testing-using-github-actions/) that goes much more in depth.
+As you can see, running k6 in CI is quite straightforward. If you want a more extensive example, you can check [this blog post](https://k6.io/blog/load-testing-using-github-actions/) which goes much more in-depth.
 
 ### b. Other CI providers
 
@@ -617,9 +622,9 @@ You can learn more about scenarios [in our docs](https://k6.io/docs/using-k6/sce
 
 k6 provides many built-in modules for core functionalities. For example, the http client make requests against the system under test. For the full list of built-in modules, refer to the [API documentation](https://k6.io/docs/javascript-api/).
 
-But, you can also create your own modules! You can use modules to share code between scripts, or to create a library of functions that you can use in your scripts.
+But you can also create your own modules! You can use modules to share code between scripts or build a library of functions you can use in your scripts.
 
-Creating a module is easy. You just need to create a file with the functions you want to export, and then import them in your script. Let's try it out!
+Creating a module is easy. You make a file with the functions you want to export and import them into your script. Let's try it out!
 
 First, create a file named `utils.js` with the following content:
 ```javascript
@@ -819,7 +824,7 @@ export async function checkFrontend() {
 }
 ```
 
-That's it. Now you should be able to run it as you would do with any test, and you get the best of both worlds!
+That's it. Now, you should be able to run it as you would do with any test, and you get the best of both worlds!
 
 You can read more about that scenario in [this section](https://k6.io/docs/using-k6-browser/running-browser-tests/#run-both-browser-level-and-protocol-level-tests-in-a-single-script) of our docs.
 
@@ -837,7 +842,7 @@ If you want to learn more about extensions, you can [check our docs](https://k6.
 
 Before, we mentioned that k6 supports WebSockets. QuickPizza also has a WebSockets endpoint.
 
-If multiple people have QuickPiza open, and one asks for a recommendation, the other people will get a little nudge telling them that someone already got a recommendation. Let's try to replicate that.
+If multiple people have the QuickPiza site open, and one asks for a recommendation, the other people will get a little nudge telling them that someone already got a recommendation. Let's try to replicate that.
 
 You could use the script you already have, but for simplicity, we will create a new one. 
 
@@ -866,7 +871,7 @@ export default function () {
 }
 ```
 
-Then, run it. If you open QuickPizza in a new tab (or refresh the existing tab), you will see how the little nudge appears and keeps telling you that someone is getting a recommendation.
+Then, open QuickPizza in a new tab (or refresh the existing tab), and run this test. run it. You will see how the little nudge appears and tells you that someone is getting a recommendation.
 
 ![nudge](./media/nudge.png)
 
@@ -878,7 +883,7 @@ You can learn more about WebSockets [in our docs](https://k6.io/docs/javascript-
 
 ## 4. More things
 
-Wow, if you have reached this point, you have learned a lot about k6. But, there is more!
+Wow, if you have reached this point, you have learned a lot about k6. But there is more!
 
 Our docs page is the best place to learn about all the things we missed and more: https://k6.io/docs/
 
